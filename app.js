@@ -18,7 +18,45 @@ function renderFav(){favContent.innerHTML=favorites.length?favorites.map(t=>`<di
 function show(id){document.querySelectorAll(".page,.nav").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelector(`.nav[data-page="${id}"]`).classList.add("active");window.scrollTo({top:0,behavior:"smooth"})}
 function openTeam(t){show("teams");teamCards.parentElement.classList.add("hidden");teamDetail.classList.remove("hidden");const s=stats().find(x=>x.team===t),ms=matches.filter(m=>m.home===t||m.away===t).sort((a,b)=>b.match_no-a.match_no),vs=VENUES[t]||[];teamDetail.innerHTML=`<button class="back" onclick="closeTeam()">← チーム一覧</button><h2>${t}</h2><div class="rank-cards"><div class="rank-card"><small>試合</small><b>${s.p}</b></div><div class="rank-card"><small>勝点</small><b>${s.pts}</b></div><div class="rank-card"><small>得点</small><b>${s.gf}</b></div><div class="rank-card"><small>失点</small><b>${s.ga}</b></div><div class="rank-card"><small>無失点</small><b>${s.cleanSheets}</b></div></div><div class="team-grid"><div><h3>ホームグラウンド</h3>${vs.map(v=>`<div class="venue"><h4>${v[0]}</h4><p>${v[1]}</p><p>${v[2]}</p></div>`).join("")}</div><div><h3>終了した試合</h3>${ms.slice(0,8).map(matchRow).join("")}<div class="pending">今後の日程、スカッド、詳細スタッツは自動取得接続後に追加します。</div></div></div>`}
 function closeTeam(){teamDetail.classList.add("hidden");teamCards.parentElement.classList.remove("hidden")}
-function openMatch(no){const m=matches.find(x=>x.match_no===no),hg=(m.goals||[]).filter(g=>g.team===m.home),ag=(m.goals||[]).filter(g=>g.team===m.away);modalBody.innerHTML=`<div class="score-head"><small>${m.round}・MATCH ${m.match_no}</small><h2>${m.home}<span class="big">${m.home_score} - ${m.away_score}</span>${m.away}</h2><p>${m.date} ${m.time}｜${m.venue}</p></div><div class="goals"><div class="goal-box"><h3>${m.home}</h3>${hg.length?hg.map(g=>`<div class="goal">${g.minute}' ⚽ ${g.scorer}${g.assist?`（${g.assist}）`:""}</div>`).join(""):"得点なし"}</div><div class="goal-box"><h3>${m.away}</h3>${ag.length?ag.map(g=>`<div class="goal">${g.minute}' ⚽ ${g.scorer}${g.assist?`（${g.assist}）`:""}</div>`).join(""):"得点なし"}</div></div><div class="pending">スタメン、ベンチ、交代、シュート、CK、FK、オフサイド、カード、タイムラインは次の詳細取得工程で追加します。</div>`;modal.classList.remove("hidden")}
+
+function calculateMinutes(detail,team){
+ const result={};
+ const starters=detail.lineups[team]?.starters||[],bench=detail.lineups[team]?.bench||[];
+ starters.forEach(p=>result[p[2]]={name:p[2],pos:p[0],number:p[1],start:0,end:90,minutes:90,status:"先発"});
+ bench.forEach(p=>result[p[2]]={name:p[2],pos:p[0],number:p[1],start:null,end:null,minutes:0,status:"ベンチ"});
+ (detail.subs||[]).filter(s=>s.team===team).forEach(s=>{
+   if(result[s.out]){result[s.out].end=Math.min(90,s.minute);result[s.out].minutes=Math.max(0,result[s.out].end-result[s.out].start)}
+   if(result[s.in]){result[s.in].start=Math.min(90,s.minute);result[s.in].end=90;result[s.in].minutes=Math.max(0,90-result[s.in].start);result[s.in].status="途中出場"}
+ });
+ return result;
+}
+function lineupTable(detail,team){
+ const mins=calculateMinutes(detail,team),l=detail.lineups[team];
+ const rows=(arr,label)=>`<h4>${label}</h4><table><thead><tr><th>Pos</th><th>#</th><th>選手</th><th>出場時間</th><th>シュート</th></tr></thead><tbody>${arr.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}${p[3]==="C"?" (C)":""}</td><td>${mins[p[2]]?.minutes||0}分</td><td>${detail.shots?.[team]?.players?.[p[2]]||0}</td></tr>`).join("")}</tbody></table>`;
+ return rows(l.starters,"スタメン")+rows(l.bench,"ベンチ");
+}
+function statCompare(detail,home,away){
+ const labels=[["shots","シュート"],["corners","コーナーキック"],["goal_kicks","ゴールキック"],["direct_fk","直接FK"],["indirect_fk","間接FK"],["offsides","オフサイド"],["pk","PK"]];
+ return `<div class="stat-list">${labels.map(([key,label])=>{const h=key==="shots"?detail.shots?.[home]?.total:detail.team_stats?.[home]?.[key],a=key==="shots"?detail.shots?.[away]?.total:detail.team_stats?.[away]?.[key];return `<div class="stat-line"><b>${h??"-"}</b><span>${label}</span><b>${a??"-"}</b></div>`}).join("")}</div>`;
+}
+function timeline(m,d){
+ let ev=[...(m.goals||[]).map(g=>({minute:parseInt(g.minute),text:`⚽ ${g.scorer}${g.assist?`（${g.assist}）`:""}`,team:g.team})],
+ ...(d.subs||[]).map(s=>({minute:s.minute,text:`⇄ OUT ${s.out} / IN ${s.in}`,team:s.team})),
+ ...(d.cards||[]).map(c=>({minute:c.minute,text:`${c.type==="red"?"🟥":"🟨"} ${c.player} ${c.reason||""}`,team:c.team}))];
+ ev.sort((a,b)=>a.minute-b.minute);return ev.map(e=>`<div class="timeline-row"><strong>${e.minute}'</strong><span>${e.text}</span><small>${e.team}</small></div>`).join("");
+}
+function openMatch(no){
+ const m=matches.find(x=>x.match_no===no),d=MATCH_DETAILS[String(no)],hg=(m.goals||[]).filter(g=>g.team===m.home),ag=(m.goals||[]).filter(g=>g.team===m.away);
+ if(!d){modalBody.innerHTML=`<div class="score-head"><small>${m.round}・MATCH ${m.match_no}</small><h2>${m.home}<span class="big">${m.home_score} - ${m.away_score}</span>${m.away}</h2><p>${m.date} ${m.time}｜${m.venue}</p></div><div class="goals"><div class="goal-box"><h3>${m.home}</h3>${hg.length?hg.map(g=>`<div class="goal">${g.minute}' ⚽ ${g.scorer}${g.assist?`（${g.assist}）`:""}</div>`).join(""):"得点なし"}</div><div class="goal-box"><h3>${m.away}</h3>${ag.length?ag.map(g=>`<div class="goal">${g.minute}' ⚽ ${g.scorer}${g.assist?`（${g.assist}）`:""}</div>`).join(""):"得点なし"}</div></div><div class="pending">この試合の詳細データは準備中です。</div>`;modal.classList.remove("hidden");return}
+ modalBody.innerHTML=`<div class="score-head"><small>${m.round}・MATCH ${m.match_no}</small><h2>${m.home}<span class="big">${m.home_score} - ${m.away_score}</span>${m.away}</h2><p>${m.date} ${m.time}｜${m.venue}</p><p>${d.weather}・${d.wind}・ピッチ${d.pitch}｜観客 ${d.attendance}人</p></div>
+ <div class="detail-tabs"><button class="active" onclick="showMatchTab('overview')">概要</button><button onclick="showMatchTab('stats')">スタッツ</button><button onclick="showMatchTab('lineups')">ラインナップ</button><button onclick="showMatchTab('timeline')">タイムライン</button></div>
+ <div id="matchTab-overview" class="match-tab"><div class="goals"><div class="goal-box"><h3>${m.home}</h3>${hg.length?hg.map(g=>`<div class="goal">${g.minute}' ⚽ ${g.scorer}${g.assist?`（${g.assist}）`:""}</div>`).join(""):"得点なし"}</div><div class="goal-box"><h3>${m.away}</h3>${ag.length?ag.map(g=>`<div class="goal">${g.minute}' ⚽ ${g.scorer}${g.assist?`（${g.assist}）`:""}</div>`).join(""):"得点なし"}</div></div><div class="official-box"><h3>審判</h3><p>主審 ${d.officials.referee}｜副審 ${d.officials.assistant1}・${d.officials.assistant2}｜第4審 ${d.officials.fourth}</p></div></div>
+ <div id="matchTab-stats" class="match-tab hidden"><div class="compare-head"><b>${m.home}</b><b>${m.away}</b></div>${statCompare(d,m.home,m.away)}</div>
+ <div id="matchTab-lineups" class="match-tab hidden"><div class="lineup-grid"><div><h3>${m.home}</h3>${lineupTable(d,m.home)}</div><div><h3>${m.away}</h3>${lineupTable(d,m.away)}</div></div></div>
+ <div id="matchTab-timeline" class="match-tab hidden"><div class="timeline">${timeline(m,d)}</div></div>`;
+ modal.classList.remove("hidden")
+}
+function showMatchTab(id){document.querySelectorAll(".match-tab").forEach(x=>x.classList.add("hidden"));document.querySelectorAll(".detail-tabs button").forEach(x=>x.classList.remove("active"));document.getElementById("matchTab-"+id).classList.remove("hidden");event.currentTarget.classList.add("active")}
 document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>show(b.dataset.page));document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>show(b.dataset.go));
 homeStandingMode.onchange=renderHome;fullStandingMode.onchange=()=>fullStandings.innerHTML=standingHTML(fullStandingMode.value,false);homePlayerStat.onchange=renderHome;homeTeamStat.onchange=renderHome;playerType.onchange=renderPlayers;[roundFilter,teamFilter,search].forEach(e=>e.addEventListener("input",renderMatches));theme.onclick=()=>document.body.classList.toggle("dark");modalClose.onclick=()=>modal.classList.add("hidden");modal.onclick=e=>{if(e.target===modal)modal.classList.add("hidden")};
 roundFilter.innerHTML='<option value="">全節</option>'+[...new Set(matches.map(m=>m.round))].map(x=>`<option>${x}</option>`).join("");teamFilter.innerHTML='<option value="">全チーム</option>'+teams().map(x=>`<option>${x}</option>`).join("");renderHome();fullStandings.innerHTML=standingHTML("all",false);renderMatches();renderPlayers();renderTeams();renderFav();
