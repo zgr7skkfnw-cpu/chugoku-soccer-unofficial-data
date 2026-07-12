@@ -94,3 +94,11 @@ renderMatches();
 renderPlayers();
 renderTeams();
 renderFav();
+
+fetch("data/sync-state.json",{cache:"no-store"}).then(r=>r.json()).then(s=>{
+ const el=document.getElementById("syncStatus");
+ if(!el)return;
+ if(!s.last_run){el.textContent="自動更新：GitHub Actionsの初回実行待ち";return}
+ const d=new Date(s.last_run);
+ el.textContent=`自動更新：${d.toLocaleString("ja-JP")} 確認済み｜検出 ${s.discovered_count||0}件｜更新 ${s.changed_count||0}件`;
+}).catch(()=>{const el=document.getElementById("syncStatus");if(el)el.textContent="自動更新状況を取得できませんでした";});

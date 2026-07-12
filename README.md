@@ -16,3 +16,17 @@
 - ボタン操作停止を修正
 - チーム一覧とランキングの名前衝突を修正
 - 試合詳細タブの切替を安定化
+
+## v0.7 自動取得
+
+- 公式日程・結果ページをPlaywrightで確認
+- 青いスコアから試合詳細へのPOST通信とgame_idを検出
+- 新規・訂正された基本結果をdata.jsへ反映
+- 公式詳細HTMLをdata/raw-resultsへ保存
+- GitHub Actionsが日本時間12時・18時・22時に確認
+- 更新時は自動コミットされ、Vercelが再デプロイ
+
+### 初回テスト
+GitHubの Actions → Sync official match results → Run workflow を押してください。
+
+注意: 外部サイトの構造変更時には解析処理の修正が必要です。
