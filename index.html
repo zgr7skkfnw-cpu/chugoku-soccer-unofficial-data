@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="googlebot" content="noindex,nofollow,noarchive">
+<title>中国大学サッカーリーグ 2026</title><link rel="stylesheet" href="style.css">
+</head>
+<body><div class="unofficial">非公式データベース｜中国大学サッカー連盟の公式サイトではありません</div>
+<header><div><h1>Chugoku Football Data</h1><div class="subtitle">中国大学サッカー 非公式データベース</div><p>1部・第1節〜第9節｜43試合収録</p></div><button id="resetBtn">初期データに戻す</button></header>
+<nav>
+<button class="tab active" data-tab="dashboard">ホーム</button>
+<button class="tab" data-tab="standings">順位表</button>
+<button class="tab" data-tab="matches">試合一覧</button>
+<button class="tab" data-tab="ranking">個人ランキング</button>
+<button class="tab" data-tab="teams">チーム別</button>
+<button class="tab" data-tab="add">試合追加</button>
+</nav>
+<main>
+<section id="dashboard" class="panel active">
+<div class="cards"><div class="card"><span>登録試合</span><strong id="matchCount"></strong></div><div class="card"><span>総得点</span><strong id="goalCount"></strong></div><div class="card"><span>登録大学</span><strong id="teamCount"></strong></div><div class="card"><span>最多得点者</span><strong id="topScorer"></strong></div></div>
+<div class="grid2"><div class="box"><h2>最新試合</h2><div id="latestMatches"></div></div><div class="box"><h2>得点ランキング TOP10</h2><div id="top10"></div></div></div>
+</section>
+<section id="standings" class="panel"><h2>順位表</h2><div id="standingsTable"></div></section>
+<section id="matches" class="panel"><div class="toolbar"><select id="roundFilter"><option value="">全節</option></select><select id="matchTeamFilter"><option value="">全大学</option></select><input id="matchSearch" placeholder="大学名・会場で検索"></div><div id="matchList"></div></section>
+<section id="ranking" class="panel"><div class="toolbar"><select id="rankingType"><option value="goals">得点</option><option value="assists">アシスト</option><option value="ga">G+A</option></select><select id="rankingTeamFilter"><option value="">リーグ全体</option></select></div><div id="rankingTable"></div></section>
+<section id="teams" class="panel"><div class="toolbar"><select id="teamSelect"></select></div><div id="teamSummary"></div></section>
+<section id="add" class="panel"><form id="matchForm" class="form"><h2 id="formTitle">試合を追加</h2><input type="hidden" name="edit_index" value="">
+<label>節<input name="round" required></label><label>マッチNo.<input name="match_no" type="number" required></label><label>日付<input name="date" type="date" required></label><label>時刻<input name="time" type="time" value="13:00" required></label><label>会場<input name="venue" required></label><label>ホーム<input name="home" required></label><label>アウェイ<input name="away" required></label><label>ホーム得点<input name="home_score" type="number" min="0" required></label><label>アウェイ得点<input name="away_score" type="number" min="0" required></label>
+<label class="wide">得点情報（1行＝分,チーム,得点者,アシスト）<textarea name="goals" rows="8"></textarea></label><div class="wide form-actions"><button type="submit">保存</button><button type="button" id="cancelEdit" class="secondary" hidden>編集をキャンセル</button></div></form></section>
+</main><script src="data.js"></script><script src="venues.js"></script><script src="app.js"></script></body></html>
