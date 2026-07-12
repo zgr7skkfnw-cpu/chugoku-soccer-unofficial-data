@@ -1,32 +1,20 @@
-# Chugoku Football Data v0.6
+# Chugoku Football Data v1.0 RC
 
-追加:
-- 試合詳細データ用の構造
-- マッチNo.14・43・44・45の詳細
-- スタメン／ベンチ
-- 選手別シュート
-- CK・GK・直接FK・間接FK・オフサイド・PK
-- 交代・カード・得点タイムライン
-- 出場時間の自動計算（アディショナルタイムを含めず最大90分）
+完成版へ向けたリリース候補版です。
 
-現時点の詳細データ収録率: 4/43試合
+## 今回の重点
+- `.github` がFinderで見えない問題への対策
+- GitHub Actions用ファイルの二重収録
+- Mac用インストーラー
+- iframeを含む全フレームのフォーム検出
+- フォームからgame_idを直接取得
+- クリック方式のフォールバック
+- 自動取得ログの保存
+- 手動実行と定期実行
+- 更新後の自動コミットとVercel再公開
 
-## v0.6.1 修正
-- JavaScript構文エラーを修正
-- ボタン操作停止を修正
-- チーム一覧とランキングの名前衝突を修正
-- 試合詳細タブの切替を安定化
+## 自動取得の時間
+日本時間 12:00 / 18:00 / 22:00
 
-## v0.7 自動取得
-
-- 公式日程・結果ページをPlaywrightで確認
-- 青いスコアから試合詳細へのPOST通信とgame_idを検出
-- 新規・訂正された基本結果をdata.jsへ反映
-- 公式詳細HTMLをdata/raw-resultsへ保存
-- GitHub Actionsが日本時間12時・18時・22時に確認
-- 更新時は自動コミットされ、Vercelが再デプロイ
-
-### 初回テスト
-GitHubの Actions → Sync official match results → Run workflow を押してください。
-
-注意: 外部サイトの構造変更時には解析処理の修正が必要です。
+## 手動確認
+Actions → Sync official match results → Run workflow
