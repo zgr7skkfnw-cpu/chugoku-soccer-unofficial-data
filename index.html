@@ -1,31 +1,97 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="googlebot" content="noindex,nofollow,noarchive">
-<title>中国大学サッカーリーグ 2026</title><link rel="stylesheet" href="style.css">
+<title>Chugoku Football Data</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<body><div class="unofficial">非公式データベース｜中国大学サッカー連盟の公式サイトではありません</div>
-<header><div><h1>Chugoku Football Data</h1><div class="subtitle">中国大学サッカー 非公式データベース</div><p>1部・第1節〜第9節｜43試合収録</p></div><button id="resetBtn">初期データに戻す</button></header>
-<nav>
-<button class="tab active" data-tab="dashboard">ホーム</button>
-<button class="tab" data-tab="standings">順位表</button>
-<button class="tab" data-tab="matches">試合一覧</button>
-<button class="tab" data-tab="ranking">個人ランキング</button>
-<button class="tab" data-tab="teams">チーム別</button>
-<button class="tab" data-tab="add">試合追加</button>
-</nav>
+<body>
+<div class="unofficial">非公式データベース｜中国大学サッカー連盟の公式サイトではありません</div>
+<div class="layout">
+<aside>
+  <div class="logo">CFD</div>
+  <button class="nav active" data-page="home">ホーム</button>
+  <button class="nav" data-page="standings">順位表</button>
+  <button class="nav" data-page="matches">試合</button>
+  <button class="nav" data-page="players">選手</button>
+  <button class="nav" data-page="teams">チーム</button>
+  <button class="nav" data-page="favorites">お気に入り</button>
+</aside>
+<div class="content">
+<header>
+  <div><h1>Chugoku Football Data</h1><p>中国大学サッカー 非公式データベース</p></div>
+  <div class="head-controls">
+    <select><option>中国大学サッカーリーグ 1部</option><option disabled>中国大学Iリーグ（準備中）</option></select>
+    <select><option>2026</option><option disabled>2025（準備中）</option></select>
+    <button id="theme">◐</button>
+  </div>
+</header>
 <main>
-<section id="dashboard" class="panel active">
-<div class="cards"><div class="card"><span>登録試合</span><strong id="matchCount"></strong></div><div class="card"><span>総得点</span><strong id="goalCount"></strong></div><div class="card"><span>登録大学</span><strong id="teamCount"></strong></div><div class="card"><span>最多得点者</span><strong id="topScorer"></strong></div></div>
-<div class="grid2"><div class="box"><h2>最新試合</h2><div id="latestMatches"></div></div><div class="box"><h2>得点ランキング TOP10</h2><div id="top10"></div></div></div>
+<section id="home" class="page active">
+  <div class="grid two">
+    <article class="panel">
+      <div class="panel-head"><div><small>STANDINGS</small><h2>順位表</h2></div><select id="homeStandingMode"><option value="all">総合</option><option value="home">ホーム</option><option value="away">アウェー</option></select></div>
+      <div id="homeStandings"></div>
+      <button class="link-btn" data-go="standings">詳しく見る →</button>
+    </article>
+    <article class="panel">
+      <div class="panel-head"><div><small>FIXTURES & RESULTS</small><h2>試合日程・結果</h2></div></div>
+      <div class="chips"><button class="chip active">終了</button><button class="chip disabled">予定</button></div>
+      <div id="homeMatches"></div>
+      <button class="link-btn" data-go="matches">全試合を見る →</button>
+    </article>
+  </div>
+
+  <article class="panel">
+    <div class="panel-head"><div><small>PLAYER STATS</small><h2>選手スタッツ</h2></div>
+      <select id="homePlayerStat"><option value="goals">得点</option><option value="assists">アシスト</option><option value="ga">G+A</option></select>
+    </div>
+    <div id="homePlayerRanks" class="rank-cards"></div>
+    <div class="pending">出場時間、90分あたり得点・シュート、カード、クリーンシートは詳細データ取得後に有効化します。</div>
+  </article>
+
+  <article class="panel">
+    <div class="panel-head"><div><small>TEAM STATS</small><h2>チームスタッツ</h2></div>
+      <select id="homeTeamStat"><option value="avgGoals">平均得点</option><option value="avgConceded">平均被得点</option><option value="cleanSheets">無失点数</option></select>
+    </div>
+    <div id="homeTeamRanks" class="rank-cards"></div>
+    <div class="pending">CK、セットプレー得失点、平均ファウル、カードは詳細データ取得後に有効化します。</div>
+  </article>
 </section>
-<section id="standings" class="panel"><h2>順位表</h2><div id="standingsTable"></div></section>
-<section id="matches" class="panel"><div class="toolbar"><select id="roundFilter"><option value="">全節</option></select><select id="matchTeamFilter"><option value="">全大学</option></select><input id="matchSearch" placeholder="大学名・会場で検索"></div><div id="matchList"></div></section>
-<section id="ranking" class="panel"><div class="toolbar"><select id="rankingType"><option value="goals">得点</option><option value="assists">アシスト</option><option value="ga">G+A</option></select><select id="rankingTeamFilter"><option value="">リーグ全体</option></select></div><div id="rankingTable"></div></section>
-<section id="teams" class="panel"><div class="toolbar"><select id="teamSelect"></select></div><div id="teamSummary"></div></section>
-<section id="add" class="panel"><form id="matchForm" class="form"><h2 id="formTitle">試合を追加</h2><input type="hidden" name="edit_index" value="">
-<label>節<input name="round" required></label><label>マッチNo.<input name="match_no" type="number" required></label><label>日付<input name="date" type="date" required></label><label>時刻<input name="time" type="time" value="13:00" required></label><label>会場<input name="venue" required></label><label>ホーム<input name="home" required></label><label>アウェイ<input name="away" required></label><label>ホーム得点<input name="home_score" type="number" min="0" required></label><label>アウェイ得点<input name="away_score" type="number" min="0" required></label>
-<label class="wide">得点情報（1行＝分,チーム,得点者,アシスト）<textarea name="goals" rows="8"></textarea></label><div class="wide form-actions"><button type="submit">保存</button><button type="button" id="cancelEdit" class="secondary" hidden>編集をキャンセル</button></div></form></section>
-</main><script src="data.js"></script><script src="venues.js"></script><script src="app.js"></script></body></html>
+
+<section id="standings" class="page">
+  <article class="panel">
+    <div class="panel-head"><div><small>LEAGUE TABLE</small><h2>順位表</h2></div><select id="fullStandingMode"><option value="all">総合</option><option value="home">ホーム</option><option value="away">アウェー</option></select></div>
+    <div id="fullStandings"></div>
+  </article>
+</section>
+
+<section id="matches" class="page">
+  <article class="panel">
+    <div class="panel-head"><div><small>MATCHES</small><h2>試合日程・結果</h2></div></div>
+    <div class="filters"><select id="roundFilter"><option value="">全節</option></select><select id="teamFilter"><option value="">全チーム</option></select><input id="search" placeholder="チーム名・会場"></div>
+    <div id="matchList"></div>
+  </article>
+</section>
+
+<section id="players" class="page">
+  <article class="panel"><div class="panel-head"><div><small>PLAYERS</small><h2>選手ランキング</h2></div><select id="playerType"><option value="goals">得点</option><option value="assists">アシスト</option><option value="ga">G+A</option></select></div><div id="playerTable"></div></article>
+</section>
+
+<section id="teams" class="page">
+  <article class="panel"><div class="panel-head"><div><small>TEAMS</small><h2>チーム一覧</h2></div></div><div id="teamCards" class="team-cards"></div></article>
+  <article id="teamDetail" class="panel hidden"></article>
+</section>
+
+<section id="favorites" class="page">
+  <article class="panel"><div class="panel-head"><div><small>FAVORITES</small><h2>お気に入り</h2></div></div><div id="favContent"></div></article>
+</section>
+</main>
+</div>
+</div>
+
+<div id="modal" class="modal hidden"><div class="modal-card"><button id="modalClose">×</button><div id="modalBody"></div></div></div>
+<script src="data.js"></script><script src="venues.js"></script><script src="app.js"></script>
+</body></html>
